@@ -1,3 +1,7 @@
+# Documentation folders (internal use only)
+docs_desarrollo/
+docs_iniciales/
+
 # Compiled class file
 *.class
 
