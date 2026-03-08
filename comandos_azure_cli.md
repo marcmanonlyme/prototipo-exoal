@@ -91,3 +91,51 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
 ```
 
 **Estado actual:** Proyecto compilado exitosamente, aplicación iniciándose en background para pruebas de conexión.
+
+## Desarrollo del Frontend - React con TypeScript
+
+### Creación del proyecto React
+**Comandos ejecutados:**
+```bash
+# Creación manual del proyecto React con estructura personalizada
+mkdir frontend-exoal
+cd frontend-exoal
+# Archivos creados: package.json, tsconfig.json, tailwind.config.js
+# Estructura: src/, public/, componentes, páginas, servicios, tipos
+```
+
+### Dependencias instaladas
+```bash
+npm install
+# Dependencias principales:
+# - react, react-dom, react-scripts
+# - typescript, @types/react, @types/react-dom
+# - axios, react-router-dom
+# - tailwindcss, autoprefixer, postcss
+```
+
+### Ejecución del frontend
+```bash
+npm start
+# Servidor de desarrollo ejecutándose en http://localhost:3000
+```
+
+### Características implementadas
+- **Interfaz completa de gestión de sedes** con operaciones CRUD
+- **Navegación responsive** con React Router
+- **Diseño moderno** con Tailwind CSS
+- **Consumo de API REST** del backend Spring Boot
+- **Manejo de estados** y errores
+- **TypeScript** para tipado fuerte
+- **Estructura modular** con componentes reutilizables
+
+## Repositorio GitHub
+
+### Creación del repositorio
+```bash
+gh repo create prototipo-exoal --public --description "Prototipo EXOAL - Sistema de gestión académica con Spring Boot y Azure SQL" --source . --push
+```
+**Resultado:** Repositorio creado exitosamente en https://github.com/marcmanonlyme/prototipo-exoal
+- Repositorio público con código fuente completo
+- Incluye: código Spring Boot, React frontend, configuración Azure, documentación de comandos
+- Excluye: documentación interna del proyecto académico

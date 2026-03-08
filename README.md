@@ -84,7 +84,7 @@ Ver `comandos_azure_cli.md` para instrucciones completas de despliegue en Azure 
 
 ## 👥 Autor
 
-Proyecto académico desarrollado para la materia de Desarrollo de Software.
+Marcos Rivas Bermúdez para la Acreditación de la Ingeniería de Software, bajo el Acuerdo 286.
 
 ## 📄 Licencia
 
