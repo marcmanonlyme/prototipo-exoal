@@ -1,8 +1,0 @@
-com\exoal\prototipo\repository\SedeRepository.class
-com\exoal\prototipo\entity\Actividad.class
-com\exoal\prototipo\entity\Sede.class
-com\exoal\prototipo\repository\ActividadRepository.class
-com\exoal\prototipo\controller\SedeController.class
-com\exoal\prototipo\PrototipoExoalApplication.class
-com\exoal\prototipo\entity\Usuario.class
-com\exoal\prototipo\repository\UsuarioRepository.class

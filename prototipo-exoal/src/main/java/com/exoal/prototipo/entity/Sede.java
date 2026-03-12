@@ -1,6 +1,7 @@
 package com.exoal.prototipo.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Entity
@@ -27,9 +28,11 @@ public class Sede {
     @Column(name = "correo_contacto", length = 100)
     private String correoContacto;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL)
     private List<Usuario> usuarios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL)
     private List<Actividad> actividades;
 
