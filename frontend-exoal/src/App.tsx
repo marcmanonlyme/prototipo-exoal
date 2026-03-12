@@ -18,7 +18,7 @@ function App() {
 }
 
 function AppContent() {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
