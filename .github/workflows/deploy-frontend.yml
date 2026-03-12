@@ -24,5 +24,6 @@ jobs:
           action: "upload"
           app_location: "frontend-exoal"
           output_location: "build"
+          app_build_command: "npx react-scripts build"
         env:
           REACT_APP_API_URL: https://app-exoal-prototipo.azurewebsites.net/api
