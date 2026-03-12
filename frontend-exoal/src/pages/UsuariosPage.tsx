@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { usuarioService, sedeService } from '../services/api';
 import { Usuario, Sede } from '../types';
+import ErrorBanner from '../components/ErrorBanner';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const UsuariosPage: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -9,6 +11,17 @@ const UsuariosPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingUsuario(null);
+  };
+
+  const estadoBadgeClass = (estado: string) => {
+    if (estado === 'activo') return 'bg-green-100 text-green-800';
+    if (estado === 'inactivo') return 'bg-gray-100 text-gray-800';
+    return 'bg-red-100 text-red-800';
+  };
 
   useEffect(() => {
     loadData();
@@ -43,16 +56,14 @@ const UsuariosPage: React.FC = () => {
     }
 
     const password = formData.get('password') as string;
-    const usuarioData: any = {
+    const base = {
       nombre: formData.get('nombre') as string,
       email: formData.get('email') as string,
       tipoUsuario: formData.get('tipoUsuario') as string,
       estado: formData.get('estado') as string,
       sede,
     };
-    if (password) {
-      usuarioData.password = password;
-    }
+    const usuarioData = password ? { ...base, password } : base;
 
     try {
       if (editingUsuario) {
@@ -64,8 +75,7 @@ const UsuariosPage: React.FC = () => {
         await usuarioService.create(usuarioData);
       }
       await loadData();
-      setShowForm(false);
-      setEditingUsuario(null);
+      handleCloseForm();
     } catch (err) {
       setError('Error al guardar el usuario');
       console.error('Error saving usuario:', err);
@@ -90,7 +100,7 @@ const UsuariosPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Cargando usuarios...</div>;
+    return <LoadingSpinner message="Cargando usuarios..." />;
   }
 
   return (
@@ -108,11 +118,7 @@ const UsuariosPage: React.FC = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} />}
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -209,10 +215,7 @@ const UsuariosPage: React.FC = () => {
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingUsuario(null);
-                }}
+                onClick={handleCloseForm}
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancelar
@@ -266,13 +269,7 @@ const UsuariosPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      usuario.estado === 'activo'
-                        ? 'bg-green-100 text-green-800'
-                        : usuario.estado === 'inactivo'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${estadoBadgeClass(usuario.estado)}`}
                   >
                     {usuario.estado}
                   </span>

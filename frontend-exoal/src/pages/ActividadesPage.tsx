@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { actividadService, sedeService, usuarioService } from '../services/api';
 import { Actividad, Sede, Usuario } from '../types';
+import ErrorBanner from '../components/ErrorBanner';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const ActividadesPage: React.FC = () => {
   const [actividades, setActividades] = useState<Actividad[]>([]);
@@ -10,6 +12,11 @@ const ActividadesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingActividad, setEditingActividad] = useState<Actividad | null>(null);
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingActividad(null);
+  };
 
   useEffect(() => {
     loadData();
@@ -50,7 +57,7 @@ const ActividadesPage: React.FC = () => {
     }
 
     const capacidadStr = formData.get('capacidad') as string;
-    const actividadData: any = {
+    const actividadData = {
       titulo: formData.get('titulo') as string,
       descripcion: (formData.get('descripcion') as string) || undefined,
       tipo: formData.get('tipo') as string,
@@ -74,8 +81,7 @@ const ActividadesPage: React.FC = () => {
         await actividadService.create(actividadData);
       }
       await loadData();
-      setShowForm(false);
-      setEditingActividad(null);
+      handleCloseForm();
     } catch (err) {
       setError('Error al guardar la actividad');
       console.error('Error saving actividad:', err);
@@ -110,7 +116,7 @@ const ActividadesPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Cargando actividades...</div>;
+    return <LoadingSpinner message="Cargando actividades..." />;
   }
 
   return (
@@ -128,11 +134,7 @@ const ActividadesPage: React.FC = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} />}
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -296,10 +298,7 @@ const ActividadesPage: React.FC = () => {
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingActividad(null);
-                }}
+                onClick={handleCloseForm}
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancelar

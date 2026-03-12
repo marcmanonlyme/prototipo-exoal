@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { sedeService } from '../services/api';
 import { Sede } from '../types';
+import ErrorBanner from '../components/ErrorBanner';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const SedesPage: React.FC = () => {
   const [sedes, setSedes] = useState<Sede[]>([]);
@@ -8,6 +10,11 @@ const SedesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingSede, setEditingSede] = useState<Sede | null>(null);
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingSede(null);
+  };
 
   useEffect(() => {
     loadSedes();
@@ -45,8 +52,7 @@ const SedesPage: React.FC = () => {
         await sedeService.create(sedeData);
       }
       await loadSedes();
-      setShowForm(false);
-      setEditingSede(null);
+      handleCloseForm();
     } catch (err) {
       setError('Error al guardar la sede');
       console.error('Error saving sede:', err);
@@ -71,7 +77,7 @@ const SedesPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Cargando sedes...</div>;
+    return <LoadingSpinner message="Cargando sedes..." />;
   }
 
   return (
@@ -89,11 +95,7 @@ const SedesPage: React.FC = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} />}
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -166,10 +168,7 @@ const SedesPage: React.FC = () => {
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingSede(null);
-                }}
+                onClick={handleCloseForm}
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancelar
@@ -224,7 +223,7 @@ const SedesPage: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
                     onClick={() => handleEdit(sede)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    className="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     Editar
                   </button>

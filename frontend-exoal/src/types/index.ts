@@ -14,7 +14,7 @@ export interface Usuario {
   password?: string;
   tipoUsuario: string;
   estado: string;
-  fechaRegistro: string;
+  fechaRegistro?: string;
   sede: Sede;
 }
 
@@ -28,9 +28,9 @@ export interface Actividad {
   horaFin: string;
   ubicacion?: string;
   capacidad?: number;
-  asistentesRegistrados: number;
+  asistentesRegistrados?: number;
   estado: string;
   sede: Sede;
   responsable: Usuario;
-  fechaCreacion: string;
+  fechaCreacion?: string;
 }
