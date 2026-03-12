@@ -27,14 +27,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            if (jwtUtil.isTokenValid(token)) {
-                String email = jwtUtil.extractEmail(token);
-                String role = jwtUtil.extractRole(token);
+            jwtUtil.getValidClaims(token).ifPresent(claims -> {
                 var auth = new UsernamePasswordAuthenticationToken(
-                        email, null, List.of(new SimpleGrantedAuthority(role)));
+                        claims.getSubject(), null,
+                        List.of(new SimpleGrantedAuthority(claims.get("role", String.class))));
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+            });
         }
         filterChain.doFilter(request, response);
     }

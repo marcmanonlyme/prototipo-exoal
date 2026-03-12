@@ -16,12 +16,8 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await authService.login(email, password);
-      login(res.data.token, {
-        email: res.data.email,
-        nombre: res.data.nombre,
-        role: res.data.role,
-      });
+      const { token: authToken, ...userInfo } = (await authService.login(email, password)).data;
+      login(authToken, userInfo);
       navigate('/sedes');
     } catch {
       setError('Credenciales inválidas. Verifique su correo y contraseña.');
