@@ -3,6 +3,7 @@ import { usuarioService, sedeService } from '../services/api';
 import { Usuario, Sede } from '../types';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 
 const UsuariosPage: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -11,6 +12,7 @@ const UsuariosPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
+  const { isAdmin } = useAuth();
 
   const handleCloseForm = () => {
     setShowForm(false);
@@ -107,15 +109,17 @@ const UsuariosPage: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-        <button
-          onClick={() => {
-            setEditingUsuario(null);
-            setShowForm(!showForm);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {showForm ? 'Cancelar' : 'Nuevo Usuario'}
-        </button>
+        {isAdmin() && (
+          <button
+            onClick={() => {
+              setEditingUsuario(null);
+              setShowForm(!showForm);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            {showForm ? 'Cancelar' : 'Nuevo Usuario'}
+          </button>
+        )}
       </div>
 
       {error && <ErrorBanner message={error} />}
@@ -278,18 +282,22 @@ const UsuariosPage: React.FC = () => {
                   {usuario.sede?.nombre || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(usuario)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(usuario.idUsuario)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
+                  {isAdmin() && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(usuario)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(usuario.idUsuario)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

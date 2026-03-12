@@ -3,6 +3,7 @@ import { actividadService, sedeService, usuarioService } from '../services/api';
 import { Actividad, Sede, Usuario } from '../types';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 
 const ActividadesPage: React.FC = () => {
   const [actividades, setActividades] = useState<Actividad[]>([]);
@@ -12,6 +13,7 @@ const ActividadesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingActividad, setEditingActividad] = useState<Actividad | null>(null);
+  const { isAdmin } = useAuth();
 
   const handleCloseForm = () => {
     setShowForm(false);
@@ -123,15 +125,17 @@ const ActividadesPage: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Actividades</h1>
-        <button
-          onClick={() => {
-            setEditingActividad(null);
-            setShowForm(!showForm);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {showForm ? 'Cancelar' : 'Nueva Actividad'}
-        </button>
+        {isAdmin() && (
+          <button
+            onClick={() => {
+              setEditingActividad(null);
+              setShowForm(!showForm);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            {showForm ? 'Cancelar' : 'Nueva Actividad'}
+          </button>
+        )}
       </div>
 
       {error && <ErrorBanner message={error} />}
@@ -365,18 +369,22 @@ const ActividadesPage: React.FC = () => {
                   {actividad.sede?.nombre || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(actividad)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(actividad.idActividad)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
+                  {isAdmin() && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(actividad)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(actividad.idActividad)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

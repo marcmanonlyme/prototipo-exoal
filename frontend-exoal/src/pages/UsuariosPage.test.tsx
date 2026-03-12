@@ -6,6 +6,15 @@ import { usuarioService, sedeService } from '../services/api';
 
 jest.mock('../services/api');
 
+jest.mock('../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: { email: 'admin@demo.edu', nombre: 'Admin Demo', role: 'administrador' },
+    token: 'mock-token',
+    isAdmin: () => true,
+    logout: jest.fn(),
+  }),
+}));
+
 const mockedUsuarioService = usuarioService as jest.Mocked<typeof usuarioService>;
 const mockedSedeService = sedeService as jest.Mocked<typeof sedeService>;
 

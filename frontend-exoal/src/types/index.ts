@@ -1,3 +1,9 @@
+export interface AuthUser {
+  email: string;
+  nombre: string;
+  role: string;
+}
+
 export interface Sede {
   idSede: number;
   nombre: string;

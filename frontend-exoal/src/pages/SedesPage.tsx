@@ -3,6 +3,7 @@ import { sedeService } from '../services/api';
 import { Sede } from '../types';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 
 const SedesPage: React.FC = () => {
   const [sedes, setSedes] = useState<Sede[]>([]);
@@ -10,6 +11,7 @@ const SedesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingSede, setEditingSede] = useState<Sede | null>(null);
+  const { isAdmin } = useAuth();
 
   const handleCloseForm = () => {
     setShowForm(false);
@@ -84,15 +86,17 @@ const SedesPage: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Gestión de Sedes</h1>
-        <button
-          onClick={() => {
-            setEditingSede(null);
-            setShowForm(!showForm);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {showForm ? 'Cancelar' : 'Nueva Sede'}
-        </button>
+        {isAdmin() && (
+          <button
+            onClick={() => {
+              setEditingSede(null);
+              setShowForm(!showForm);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            {showForm ? 'Cancelar' : 'Nueva Sede'}
+          </button>
+        )}
       </div>
 
       {error && <ErrorBanner message={error} />}
@@ -221,18 +225,22 @@ const SedesPage: React.FC = () => {
                   {sede.telefono || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(sede)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sede.idSede)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Eliminar
-                  </button>
+                  {isAdmin() && (
+                    <>
+                      <button
+                        onClick={() => handleEdit(sede)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(sede.idSede)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
