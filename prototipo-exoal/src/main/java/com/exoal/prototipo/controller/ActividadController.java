@@ -3,6 +3,7 @@ package com.exoal.prototipo.controller;
 import com.exoal.prototipo.entity.Actividad;
 import com.exoal.prototipo.repository.ActividadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,10 @@ public class ActividadController {
     }
 
     @GetMapping("/{id}")
-    public Actividad getActividadById(@PathVariable Long id) {
-        return actividadRepository.findById(id).orElse(null);
+    public ResponseEntity<Actividad> getActividadById(@PathVariable Long id) {
+        return actividadRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/sede/{sedeId}")
@@ -40,9 +43,8 @@ public class ActividadController {
     }
 
     @PutMapping("/{id}")
-    public Actividad updateActividad(@PathVariable Long id, @RequestBody Actividad actividadDetails) {
-        Actividad actividad = actividadRepository.findById(id).orElse(null);
-        if (actividad != null) {
+    public ResponseEntity<Actividad> updateActividad(@PathVariable Long id, @RequestBody Actividad actividadDetails) {
+        return actividadRepository.findById(id).map(actividad -> {
             actividad.setTitulo(actividadDetails.getTitulo());
             actividad.setDescripcion(actividadDetails.getDescripcion());
             actividad.setTipo(actividadDetails.getTipo());
@@ -54,13 +56,14 @@ public class ActividadController {
             actividad.setEstado(actividadDetails.getEstado());
             actividad.setSede(actividadDetails.getSede());
             actividad.setResponsable(actividadDetails.getResponsable());
-            return actividadRepository.save(actividad);
-        }
-        return null;
+            return ResponseEntity.ok(actividadRepository.save(actividad));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public void deleteActividad(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteActividad(@PathVariable Long id) {
+        if (!actividadRepository.existsById(id)) return ResponseEntity.notFound().build();
         actividadRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

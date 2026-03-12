@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.http.ResponseEntity;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -58,19 +60,20 @@ class UsuarioControllerTest {
     void getUsuarioById_existente_retornaUsuario() {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario1));
 
-        Usuario result = usuarioController.getUsuarioById(1L);
+        ResponseEntity<Usuario> response = usuarioController.getUsuarioById(1L);
 
-        assertNotNull(result);
-        assertEquals("admin@univ.edu", result.getEmail());
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals("admin@univ.edu", response.getBody().getEmail());
     }
 
     @Test
-    void getUsuarioById_noExistente_retornaNull() {
+    void getUsuarioById_noExistente_retorna404() {
         when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Usuario result = usuarioController.getUsuarioById(99L);
+        ResponseEntity<Usuario> response = usuarioController.getUsuarioById(99L);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
@@ -90,9 +93,10 @@ class UsuarioControllerTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario1));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario1);
 
-        Usuario result = usuarioController.updateUsuario(1L, detalles);
+        ResponseEntity<Usuario> response = usuarioController.updateUsuario(1L, detalles);
 
-        assertNotNull(result);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
         // La password debe haberse actualizado porque no está vacía
         verify(usuarioRepository, times(1)).save(usuario1);
         assertEquals("nuevaPassword", usuario1.getPassword());
@@ -112,21 +116,23 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void updateUsuario_noExistente_retornaNull() {
+    void updateUsuario_noExistente_retorna404() {
         when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Usuario result = usuarioController.updateUsuario(99L, usuario1);
+        ResponseEntity<Usuario> response = usuarioController.updateUsuario(99L, usuario1);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
         verify(usuarioRepository, never()).save(any());
     }
 
     @Test
     void deleteUsuario_llamaDeleteById() {
+        when(usuarioRepository.existsById(1L)).thenReturn(true);
         doNothing().when(usuarioRepository).deleteById(1L);
 
-        usuarioController.deleteUsuario(1L);
+        ResponseEntity<Void> response = usuarioController.deleteUsuario(1L);
 
+        assertEquals(204, response.getStatusCode().value());
         verify(usuarioRepository, times(1)).deleteById(1L);
     }
 }

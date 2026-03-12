@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.http.ResponseEntity;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -52,19 +54,20 @@ class SedeControllerTest {
     void getSedeById_existente_retornaSede() {
         when(sedeRepository.findById(1L)).thenReturn(Optional.of(sede1));
 
-        Sede result = sedeController.getSedeById(1L);
+        ResponseEntity<Sede> response = sedeController.getSedeById(1L);
 
-        assertNotNull(result);
-        assertEquals("plantel", result.getTipo());
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals("plantel", response.getBody().getTipo());
     }
 
     @Test
-    void getSedeById_noExistente_retornaNull() {
+    void getSedeById_noExistente_retorna404() {
         when(sedeRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Sede result = sedeController.getSedeById(99L);
+        ResponseEntity<Sede> response = sedeController.getSedeById(99L);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
@@ -84,28 +87,31 @@ class SedeControllerTest {
         when(sedeRepository.findById(1L)).thenReturn(Optional.of(sede1));
         when(sedeRepository.save(any(Sede.class))).thenReturn(sede1);
 
-        Sede result = sedeController.updateSede(1L, detalles);
+        ResponseEntity<Sede> response = sedeController.updateSede(1L, detalles);
 
-        assertNotNull(result);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
         verify(sedeRepository, times(1)).save(sede1);
     }
 
     @Test
-    void updateSede_noExistente_retornaNull() {
+    void updateSede_noExistente_retorna404() {
         when(sedeRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Sede result = sedeController.updateSede(99L, sede1);
+        ResponseEntity<Sede> response = sedeController.updateSede(99L, sede1);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
         verify(sedeRepository, never()).save(any());
     }
 
     @Test
     void deleteSede_llamaDeleteById() {
+        when(sedeRepository.existsById(1L)).thenReturn(true);
         doNothing().when(sedeRepository).deleteById(1L);
 
-        sedeController.deleteSede(1L);
+        ResponseEntity<Void> response = sedeController.deleteSede(1L);
 
+        assertEquals(204, response.getStatusCode().value());
         verify(sedeRepository, times(1)).deleteById(1L);
     }
 }

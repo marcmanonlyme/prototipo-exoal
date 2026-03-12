@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.http.ResponseEntity;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -76,19 +78,20 @@ class ActividadControllerTest {
     void getActividadById_existente_retornaActividad() {
         when(actividadRepository.findById(1L)).thenReturn(Optional.of(actividad1));
 
-        Actividad result = actividadController.getActividadById(1L);
+        ResponseEntity<Actividad> response = actividadController.getActividadById(1L);
 
-        assertNotNull(result);
-        assertEquals("academica", result.getTipo());
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals("academica", response.getBody().getTipo());
     }
 
     @Test
-    void getActividadById_noExistente_retornaNull() {
+    void getActividadById_noExistente_retorna404() {
         when(actividadRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Actividad result = actividadController.getActividadById(99L);
+        ResponseEntity<Actividad> response = actividadController.getActividadById(99L);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
     }
 
     @Test
@@ -144,9 +147,10 @@ class ActividadControllerTest {
         when(actividadRepository.findById(1L)).thenReturn(Optional.of(actividad1));
         when(actividadRepository.save(any(Actividad.class))).thenReturn(actividad1);
 
-        Actividad result = actividadController.updateActividad(1L, detalles);
+        ResponseEntity<Actividad> response = actividadController.updateActividad(1L, detalles);
 
-        assertNotNull(result);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
         assertEquals("Conferencia Actualizada", actividad1.getTitulo());
         assertEquals("cultural", actividad1.getTipo());
         assertEquals("en_curso", actividad1.getEstado());
@@ -154,21 +158,23 @@ class ActividadControllerTest {
     }
 
     @Test
-    void updateActividad_noExistente_retornaNull() {
+    void updateActividad_noExistente_retorna404() {
         when(actividadRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Actividad result = actividadController.updateActividad(99L, actividad1);
+        ResponseEntity<Actividad> response = actividadController.updateActividad(99L, actividad1);
 
-        assertNull(result);
+        assertEquals(404, response.getStatusCode().value());
         verify(actividadRepository, never()).save(any());
     }
 
     @Test
     void deleteActividad_llamaDeleteById() {
+        when(actividadRepository.existsById(1L)).thenReturn(true);
         doNothing().when(actividadRepository).deleteById(1L);
 
-        actividadController.deleteActividad(1L);
+        ResponseEntity<Void> response = actividadController.deleteActividad(1L);
 
+        assertEquals(204, response.getStatusCode().value());
         verify(actividadRepository, times(1)).deleteById(1L);
     }
 }

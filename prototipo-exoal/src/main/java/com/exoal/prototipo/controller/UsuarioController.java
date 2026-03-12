@@ -3,6 +3,7 @@ package com.exoal.prototipo.controller;
 import com.exoal.prototipo.entity.Usuario;
 import com.exoal.prototipo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,10 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public Usuario getUsuarioById(@PathVariable Long id) {
-        return usuarioRepository.findById(id).orElse(null);
+    public ResponseEntity<Usuario> getUsuarioById(@PathVariable Long id) {
+        return usuarioRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -30,9 +33,8 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public Usuario updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(null);
-        if (usuario != null) {
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
+        return usuarioRepository.findById(id).map(usuario -> {
             usuario.setNombre(usuarioDetails.getNombre());
             usuario.setEmail(usuarioDetails.getEmail());
             usuario.setTipoUsuario(usuarioDetails.getTipoUsuario());
@@ -41,13 +43,14 @@ public class UsuarioController {
             if (usuarioDetails.getPassword() != null && !usuarioDetails.getPassword().isEmpty()) {
                 usuario.setPassword(usuarioDetails.getPassword());
             }
-            return usuarioRepository.save(usuario);
-        }
-        return null;
+            return ResponseEntity.ok(usuarioRepository.save(usuario));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUsuario(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
+        if (!usuarioRepository.existsById(id)) return ResponseEntity.notFound().build();
         usuarioRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

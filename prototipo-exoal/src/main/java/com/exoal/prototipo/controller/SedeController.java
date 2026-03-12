@@ -3,6 +3,7 @@ package com.exoal.prototipo.controller;
 import com.exoal.prototipo.entity.Sede;
 import com.exoal.prototipo.repository.SedeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,10 @@ public class SedeController {
     }
 
     @GetMapping("/{id}")
-    public Sede getSedeById(@PathVariable Long id) {
-        return sedeRepository.findById(id).orElse(null);
+    public ResponseEntity<Sede> getSedeById(@PathVariable Long id) {
+        return sedeRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -30,21 +33,21 @@ public class SedeController {
     }
 
     @PutMapping("/{id}")
-    public Sede updateSede(@PathVariable Long id, @RequestBody Sede sedeDetails) {
-        Sede sede = sedeRepository.findById(id).orElse(null);
-        if (sede != null) {
+    public ResponseEntity<Sede> updateSede(@PathVariable Long id, @RequestBody Sede sedeDetails) {
+        return sedeRepository.findById(id).map(sede -> {
             sede.setNombre(sedeDetails.getNombre());
             sede.setTipo(sedeDetails.getTipo());
             sede.setDireccion(sedeDetails.getDireccion());
             sede.setTelefono(sedeDetails.getTelefono());
             sede.setCorreoContacto(sedeDetails.getCorreoContacto());
-            return sedeRepository.save(sede);
-        }
-        return null;
+            return ResponseEntity.ok(sedeRepository.save(sede));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public void deleteSede(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteSede(@PathVariable Long id) {
+        if (!sedeRepository.existsById(id)) return ResponseEntity.notFound().build();
         sedeRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
