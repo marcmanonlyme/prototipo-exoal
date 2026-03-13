@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
     try {
       const { token: authToken, ...userInfo } = (await authService.login(email, password)).data;
       login(authToken, userInfo);
-      navigate('/sedes');
+      navigate('/actividades');
     } catch {
       setError('Credenciales inválidas. Verifique su correo y contraseña.');
     } finally {
