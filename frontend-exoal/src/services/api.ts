@@ -61,8 +61,17 @@ export const usuarioService = {
   delete: (id: number) => api.delete(`/usuarios/${id}`),
 };
 
+export interface ActividadFilter {
+  titulo?: string;
+  tipo?: string;
+  sedeId?: number;
+  desde?: string;
+  hasta?: string;
+  estado?: string;
+}
+
 export const actividadService = {
-  getAll: () => api.get<Actividad[]>('/actividades'),
+  getAll: (filters?: ActividadFilter) => api.get<Actividad[]>('/actividades', { params: filters }),
   getById: (id: number) => api.get<Actividad>(`/actividades/${id}`),
   create: (actividad: Omit<Actividad, 'idActividad'>) => api.post<Actividad>('/actividades', actividad),
   update: (id: number, actividad: Actividad) => api.put<Actividad>(`/actividades/${id}`, actividad),

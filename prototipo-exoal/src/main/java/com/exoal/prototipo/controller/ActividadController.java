@@ -2,10 +2,13 @@ package com.exoal.prototipo.controller;
 
 import com.exoal.prototipo.entity.Actividad;
 import com.exoal.prototipo.repository.ActividadRepository;
+import com.exoal.prototipo.repository.ActividadSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -16,8 +19,15 @@ public class ActividadController {
     private ActividadRepository actividadRepository;
 
     @GetMapping
-    public List<Actividad> getAllActividades() {
-        return actividadRepository.findAll();
+    public List<Actividad> getAllActividades(
+            @RequestParam(required = false) Long sedeId,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) String estado) {
+        return actividadRepository.findAll(
+                ActividadSpecification.withFilters(sedeId, tipo, titulo, desde, hasta, estado));
     }
 
     @GetMapping("/{id}")

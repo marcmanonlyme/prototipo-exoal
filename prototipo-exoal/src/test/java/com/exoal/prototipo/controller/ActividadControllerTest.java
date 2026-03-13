@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.domain.Specification;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -65,13 +67,13 @@ class ActividadControllerTest {
 
     @Test
     void getAllActividades_retornaListaCompleta() {
-        when(actividadRepository.findAll()).thenReturn(Arrays.asList(actividad1, actividad2));
+        when(actividadRepository.findAll(any(Specification.class))).thenReturn(Arrays.asList(actividad1, actividad2));
 
-        List<Actividad> result = actividadController.getAllActividades();
+        List<Actividad> result = actividadController.getAllActividades(null, null, null, null, null, null);
 
         assertEquals(2, result.size());
         assertEquals("Conferencia de IA", result.get(0).getTitulo());
-        verify(actividadRepository, times(1)).findAll();
+        verify(actividadRepository, times(1)).findAll(any(Specification.class));
     }
 
     @Test

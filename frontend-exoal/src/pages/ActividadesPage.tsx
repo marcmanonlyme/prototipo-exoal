@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { actividadService, sedeService, usuarioService } from '../services/api';
+import { actividadService, sedeService, usuarioService, ActividadFilter } from '../services/api';
 import { Actividad, Sede, Usuario } from '../types';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -13,6 +13,14 @@ const ActividadesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingActividad, setEditingActividad] = useState<Actividad | null>(null);
+  const [filterSede, setFilterSede] = useState('');
+  const [filterTipo, setFilterTipo] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+  const [filterDesde, setFilterDesde] = useState('');
+  const [filterHasta, setFilterHasta] = useState('');
+  const [filterTitulo, setFilterTitulo] = useState('');
+  const [debouncedTitulo, setDebouncedTitulo] = useState('');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { isAdmin } = useAuth();
 
   const handleCloseForm = () => {
@@ -20,28 +28,58 @@ const ActividadesPage: React.FC = () => {
     setEditingActividad(null);
   };
 
+  // Load sedes + usuarios once on mount
   useEffect(() => {
-    loadData();
+    Promise.all([sedeService.getAll(), usuarioService.getAll()])
+      .then(([sedesRes, usuariosRes]) => {
+        setSedes(sedesRes.data);
+        setUsuarios(usuariosRes.data);
+      })
+      .catch((err) => {
+        setError('Error al cargar sedes y usuarios');
+        console.error('Error loading reference data:', err);
+      });
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [actividadesRes, sedesRes, usuariosRes] = await Promise.all([
-        actividadService.getAll(),
-        sedeService.getAll(),
-        usuarioService.getAll(),
-      ]);
-      setActividades(actividadesRes.data);
-      setSedes(sedesRes.data);
-      setUsuarios(usuariosRes.data);
-      setError(null);
-    } catch (err) {
-      setError('Error al cargar los datos');
-      console.error('Error loading data:', err);
-    } finally {
-      setLoading(false);
-    }
+  // Debounce the title input to avoid a request on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTitulo(filterTitulo), 500);
+    return () => clearTimeout(timer);
+  }, [filterTitulo]);
+
+  // Reload actividades when any filter changes or after a mutation
+  useEffect(() => {
+    const params: ActividadFilter = {
+      titulo: debouncedTitulo || undefined,
+      tipo: filterTipo || undefined,
+      sedeId: filterSede ? Number(filterSede) : undefined,
+      desde: filterDesde || undefined,
+      hasta: filterHasta || undefined,
+      estado: filterEstado || undefined,
+    };
+    setLoading(true);
+    actividadService
+      .getAll(params)
+      .then((res) => {
+        setActividades(res.data);
+        setError(null);
+      })
+      .catch((err) => {
+        setError('Error al cargar las actividades');
+        console.error('Error loading actividades:', err);
+      })
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTitulo, filterTipo, filterSede, filterDesde, filterHasta, filterEstado, refreshTrigger]);
+
+  const clearFilters = () => {
+    setFilterSede('');
+    setFilterTipo('');
+    setFilterEstado('');
+    setFilterDesde('');
+    setFilterHasta('');
+    setFilterTitulo('');
+    setDebouncedTitulo('');
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -82,7 +120,7 @@ const ActividadesPage: React.FC = () => {
       } else {
         await actividadService.create(actividadData);
       }
-      await loadData();
+      setRefreshTrigger((n) => n + 1);
       handleCloseForm();
     } catch (err) {
       setError('Error al guardar la actividad');
@@ -99,7 +137,7 @@ const ActividadesPage: React.FC = () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta actividad?')) {
       try {
         await actividadService.delete(id);
-        await loadData();
+        setRefreshTrigger((n) => n + 1);
       } catch (err) {
         setError('Error al eliminar la actividad');
         console.error('Error deleting actividad:', err);
@@ -139,6 +177,92 @@ const ActividadesPage: React.FC = () => {
       </div>
 
       {error && <ErrorBanner message={error} />}
+
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Título</label>
+            <input
+              type="text"
+              placeholder="Buscar por título..."
+              value={filterTitulo}
+              onChange={(e) => setFilterTitulo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Sede</label>
+            <select
+              value={filterSede}
+              onChange={(e) => setFilterSede(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Todas las sedes</option>
+              {sedes.map((s) => (
+                <option key={s.idSede} value={s.idSede}>{s.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Tipo</label>
+            <select
+              value={filterTipo}
+              onChange={(e) => setFilterTipo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Todos los tipos</option>
+              <option value="cultural">Cultural</option>
+              <option value="academica">Académica</option>
+              <option value="extraacademica">Extraacadémica</option>
+              <option value="administrativa">Administrativa</option>
+              <option value="economica">Económica</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Estado</label>
+            <select
+              value={filterEstado}
+              onChange={(e) => setFilterEstado(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Todos los estados</option>
+              <option value="programada">Programada</option>
+              <option value="en_curso">En curso</option>
+              <option value="finalizada">Finalizada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Desde</label>
+            <input
+              type="date"
+              value={filterDesde}
+              onChange={(e) => setFilterDesde(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Hasta</label>
+            <input
+              type="date"
+              value={filterHasta}
+              onChange={(e) => setFilterHasta(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-sm text-gray-500">
+            {actividades.length} resultado{actividades.length !== 1 ? 's' : ''}
+          </span>
+          <button
+            onClick={clearFilters}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -390,8 +514,12 @@ const ActividadesPage: React.FC = () => {
             ))}
           </tbody>
         </table>
-        {actividades.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No hay actividades registradas</div>
+        {actividades.length === 0 && !loading && (
+          <div className="text-center py-8 text-gray-500">
+            {filterTitulo || filterSede || filterTipo || filterDesde || filterHasta || filterEstado
+              ? 'No se encontraron actividades con los filtros aplicados'
+              : 'No hay actividades registradas'}
+          </div>
         )}
       </div>
     </div>
