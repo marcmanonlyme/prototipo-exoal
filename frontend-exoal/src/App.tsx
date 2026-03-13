@@ -79,7 +79,7 @@ function AppContent() {
           <Route path="/sedes" element={<PrivateRoute><SedesPage /></PrivateRoute>} />
           <Route path="/usuarios" element={<PrivateRoute><UsuariosPage /></PrivateRoute>} />
           <Route path="/actividades" element={<PrivateRoute><ActividadesPage /></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
