@@ -18,7 +18,7 @@ function App() {
 }
 
 function AppContent() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -46,9 +46,11 @@ function AppContent() {
                 <Link to="/sedes" className="hover:bg-blue-700 px-3 py-2 rounded">
                   Sedes
                 </Link>
-                <Link to="/usuarios" className="hover:bg-blue-700 px-3 py-2 rounded">
-                  Usuarios
-                </Link>
+                {isAdmin() && (
+                  <Link to="/usuarios" className="hover:bg-blue-700 px-3 py-2 rounded">
+                    Usuarios
+                  </Link>
+                )}
                 <Link to="/actividades" className="hover:bg-blue-700 px-3 py-2 rounded">
                   Actividades
                 </Link>
