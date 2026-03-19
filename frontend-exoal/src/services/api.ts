@@ -19,16 +19,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Manejo de errores: redirige a login si hay 401
+// Manejo de errores: redirige a login si hay 401 (excepto en el propio endpoint de login)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    console.error('API Error:', error);
     return Promise.reject(error);
   }
 );
