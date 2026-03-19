@@ -99,6 +99,13 @@ const LoginPage: React.FC = () => {
                 docente — solo lectura
               </span>
             </p>
+            <p>
+              <span className="font-mono">estudiante@demo.edu</span> /{' '}
+              <span className="font-mono">Estudiante123</span>
+              <span className="ml-2 bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-xs font-medium">
+                estudiante — solo lectura
+              </span>
+            </p>
           </div>
         </div>
       </div>
