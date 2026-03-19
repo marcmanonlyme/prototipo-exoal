@@ -28,9 +28,16 @@ jobs:
         working-directory: prototipo-exoal
         run: mvn package -DskipTests -q
 
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          app-name: app-exoal-prototipo
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: prototipo-exoal/target/prototipo-exoal-0.0.1-SNAPSHOT.jar
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
+        run: |
+          az webapp deploy \
+            --name app-exoal-prototipo \
+            --resource-group rg-exoal-prototipo \
+            --src-path prototipo-exoal/target/prototipo-exoal-0.0.1-SNAPSHOT.jar \
+            --type jar \
+            --async false
