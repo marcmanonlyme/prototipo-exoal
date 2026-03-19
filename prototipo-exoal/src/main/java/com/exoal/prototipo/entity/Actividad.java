@@ -48,10 +48,6 @@ public class Actividad {
     @JoinColumn(name = "id_sede", nullable = false)
     private Sede sede;
 
-    @ManyToOne
-    @JoinColumn(name = "id_responsable")
-    private Usuario responsable;
-
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
@@ -60,7 +56,7 @@ public class Actividad {
 
     public Actividad(String titulo, String descripcion, String tipo, LocalDate fechaInicio,
                      LocalTime horaInicio, LocalTime horaFin, String ubicacion, Integer capacidad,
-                     Sede sede, Usuario responsable) {
+                     Sede sede) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.tipo = tipo;
@@ -70,7 +66,6 @@ public class Actividad {
         this.ubicacion = ubicacion;
         this.capacidad = capacidad;
         this.sede = sede;
-        this.responsable = responsable;
         this.estado = "programada";
         this.fechaCreacion = LocalDateTime.now();
         this.asistentesRegistrados = 0;
@@ -171,14 +166,6 @@ public class Actividad {
 
     public void setSede(Sede sede) {
         this.sede = sede;
-    }
-
-    public Usuario getResponsable() {
-        return responsable;
-    }
-
-    public void setResponsable(Usuario responsable) {
-        this.responsable = responsable;
     }
 
     public LocalDateTime getFechaCreacion() {

@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ActividadRepository extends JpaRepository<Actividad, Long>, JpaSpecificationExecutor<Actividad> {
-    List<Actividad> findByResponsableIdUsuario(Long responsableId);
     List<Actividad> findBySedeIdSede(Long sedeId);
 }

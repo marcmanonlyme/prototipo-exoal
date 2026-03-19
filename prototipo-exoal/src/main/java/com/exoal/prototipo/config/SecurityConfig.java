@@ -56,6 +56,8 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/sedes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/actividades", "/api/actividades/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/**").hasAuthority("administrador")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasAuthority("administrador")

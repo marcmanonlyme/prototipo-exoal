@@ -2,7 +2,6 @@ package com.exoal.prototipo.controller;
 
 import com.exoal.prototipo.entity.Actividad;
 import com.exoal.prototipo.entity.Sede;
-import com.exoal.prototipo.entity.Usuario;
 import com.exoal.prototipo.repository.ActividadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,6 @@ class ActividadControllerTest {
     private ActividadController actividadController;
 
     private Sede sede;
-    private Usuario responsable;
     private Actividad actividad1;
     private Actividad actividad2;
 
@@ -45,14 +43,11 @@ class ActividadControllerTest {
         sede = new Sede("Plantel Centro", "plantel", "Av. Universidad 123", "555-0101", "centro@univ.edu");
         sede.setIdSede(1L);
 
-        responsable = new Usuario("Docente María", "maria@univ.edu", "hash", "docente", sede);
-        responsable.setIdUsuario(3L);
-
         actividad1 = new Actividad(
                 "Conferencia de IA", "Intro a IA", "academica",
                 LocalDate.of(2026, 3, 15),
                 LocalTime.of(10, 0), LocalTime.of(12, 0),
-                "Auditorio A", 100, sede, responsable
+                "Auditorio A", 100, sede
         );
         actividad1.setIdActividad(1L);
 
@@ -60,7 +55,7 @@ class ActividadControllerTest {
                 "Taller de Programación", "Dev web con Java", "extraacademica",
                 LocalDate.of(2026, 3, 20),
                 LocalTime.of(14, 0), LocalTime.of(16, 0),
-                "Laboratorio 5", 30, sede, responsable
+                "Laboratorio 5", 30, sede
         );
         actividad2.setIdActividad(2L);
     }
@@ -74,6 +69,24 @@ class ActividadControllerTest {
         assertEquals(2, result.size());
         assertEquals("Conferencia de IA", result.get(0).getTitulo());
         verify(actividadRepository, times(1)).findAll(any(Specification.class));
+    }
+
+    @Test
+    void getAllActividades_sinAutenticacion_filtraEconomicas() {
+        Actividad economica = new Actividad(
+                "Pago de Inscripción", "Cobro semestral", "economica",
+                LocalDate.of(2026, 4, 1),
+                LocalTime.of(9, 0), LocalTime.of(10, 0),
+                "Administración", 0, sede
+        );
+        economica.setIdActividad(3L);
+        when(actividadRepository.findAll(any(Specification.class)))
+                .thenReturn(Arrays.asList(actividad1, economica));
+
+        List<Actividad> result = actividadController.getAllActividades(null, null, null, null, null, null);
+
+        assertEquals(1, result.size());
+        assertEquals("Conferencia de IA", result.get(0).getTitulo());
     }
 
     @Test
@@ -107,16 +120,6 @@ class ActividadControllerTest {
     }
 
     @Test
-    void getActividadesByResponsable_retornaActividadesDelResponsable() {
-        when(actividadRepository.findByResponsableIdUsuario(3L)).thenReturn(Arrays.asList(actividad1, actividad2));
-
-        List<Actividad> result = actividadController.getActividadesByResponsable(3L);
-
-        assertEquals(2, result.size());
-        verify(actividadRepository, times(1)).findByResponsableIdUsuario(3L);
-    }
-
-    @Test
     void getActividadesBySede_sinResultados_retornaListaVacia() {
         when(actividadRepository.findBySedeIdSede(99L)).thenReturn(Collections.emptyList());
 
@@ -142,7 +145,7 @@ class ActividadControllerTest {
                 "Conferencia Actualizada", "Nueva descripción", "cultural",
                 LocalDate.of(2026, 4, 1),
                 LocalTime.of(9, 0), LocalTime.of(11, 0),
-                "Sala B", 50, sede, responsable
+                "Sala B", 50, sede
         );
         detalles.setEstado("en_curso");
 

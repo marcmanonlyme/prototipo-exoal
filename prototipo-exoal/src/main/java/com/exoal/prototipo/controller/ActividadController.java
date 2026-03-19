@@ -6,6 +6,9 @@ import com.exoal.prototipo.repository.ActividadSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,6 +21,22 @@ public class ActividadController {
     @Autowired
     private ActividadRepository actividadRepository;
 
+    private boolean isUserAllowedToViewEconomical() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.isAuthenticated() &&
+               (auth.getAuthorities().contains(new SimpleGrantedAuthority("docente")) ||
+                auth.getAuthorities().contains(new SimpleGrantedAuthority("administrador")));
+    }
+
+    private List<Actividad> filterByEconomicalAccess(List<Actividad> actividades) {
+        if (isUserAllowedToViewEconomical()) {
+            return actividades;
+        }
+        return actividades.stream()
+                .filter(a -> !"economica".equals(a.getTipo()))
+                .toList();
+    }
+
     @GetMapping
     public List<Actividad> getAllActividades(
             @RequestParam(required = false) Long sedeId,
@@ -26,25 +45,23 @@ public class ActividadController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(required = false) String estado) {
-        return actividadRepository.findAll(
+        List<Actividad> actividades = actividadRepository.findAll(
                 ActividadSpecification.withFilters(sedeId, tipo, titulo, desde, hasta, estado));
+        return filterByEconomicalAccess(actividades);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Actividad> getActividadById(@PathVariable Long id) {
         return actividadRepository.findById(id)
+                .filter(actividad -> isUserAllowedToViewEconomical() || !"economica".equals(actividad.getTipo()))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/sede/{sedeId}")
     public List<Actividad> getActividadesBySede(@PathVariable Long sedeId) {
-        return actividadRepository.findBySedeIdSede(sedeId);
-    }
-
-    @GetMapping("/responsable/{usuarioId}")
-    public List<Actividad> getActividadesByResponsable(@PathVariable Long usuarioId) {
-        return actividadRepository.findByResponsableIdUsuario(usuarioId);
+        List<Actividad> actividades = actividadRepository.findBySedeIdSede(sedeId);
+        return filterByEconomicalAccess(actividades);
     }
 
     @PostMapping
@@ -65,7 +82,6 @@ public class ActividadController {
             actividad.setCapacidad(actividadDetails.getCapacidad());
             actividad.setEstado(actividadDetails.getEstado());
             actividad.setSede(actividadDetails.getSede());
-            actividad.setResponsable(actividadDetails.getResponsable());
             return ResponseEntity.ok(actividadRepository.save(actividad));
         }).orElse(ResponseEntity.notFound().build());
     }

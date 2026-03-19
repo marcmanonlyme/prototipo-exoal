@@ -1,10 +1,8 @@
 package com.exoal.prototipo.entity;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "usuario")
@@ -25,6 +23,9 @@ public class Usuario {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    @Column(name = "id_institucional", unique = true, length = 50)
+    private String idInstitucional;
+
     @Column(name = "tipo_usuario", nullable = false, length = 20)
     private String tipoUsuario;
 
@@ -37,10 +38,6 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "id_sede")
     private Sede sede;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "responsable", cascade = CascadeType.ALL)
-    private List<Actividad> actividades;
 
     // Constructores
     public Usuario() {}
@@ -88,6 +85,14 @@ public class Usuario {
         this.password = password;
     }
 
+    public String getIdInstitucional() {
+        return idInstitucional;
+    }
+
+    public void setIdInstitucional(String idInstitucional) {
+        this.idInstitucional = idInstitucional;
+    }
+
     public String getTipoUsuario() {
         return tipoUsuario;
     }
@@ -118,13 +123,5 @@ public class Usuario {
 
     public void setSede(Sede sede) {
         this.sede = sede;
-    }
-
-    public List<Actividad> getActividades() {
-        return actividades;
-    }
-
-    public void setActividades(List<Actividad> actividades) {
-        this.actividades = actividades;
     }
 }

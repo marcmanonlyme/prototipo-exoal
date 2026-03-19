@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { actividadService, sedeService, usuarioService, ActividadFilter } from '../services/api';
-import { Actividad, Sede, Usuario } from '../types';
+import { actividadService, sedeService, ActividadFilter } from '../services/api';
+import { Actividad, Sede } from '../types';
 import ErrorBanner from '../components/ErrorBanner';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,7 +8,6 @@ import { useAuth } from '../contexts/AuthContext';
 const ActividadesPage: React.FC = () => {
   const [actividades, setActividades] = useState<Actividad[]>([]);
   const [sedes, setSedes] = useState<Sede[]>([]);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -28,16 +27,15 @@ const ActividadesPage: React.FC = () => {
     setEditingActividad(null);
   };
 
-  // Load sedes + usuarios once on mount
+  // Load sedes on mount
   useEffect(() => {
-    Promise.all([sedeService.getAll(), usuarioService.getAll()])
-      .then(([sedesRes, usuariosRes]) => {
-        setSedes(sedesRes.data);
-        setUsuarios(usuariosRes.data);
+    sedeService.getAll()
+      .then((res) => {
+        setSedes(res.data);
       })
       .catch((err) => {
-        setError('Error al cargar sedes y usuarios');
-        console.error('Error loading reference data:', err);
+        setError('Error al cargar sedes');
+        console.error('Error loading sedes:', err);
       });
   }, []);
 
@@ -87,12 +85,10 @@ const ActividadesPage: React.FC = () => {
     const formData = new FormData(e.currentTarget);
 
     const sedeId = Number(formData.get('sedeId'));
-    const responsableId = Number(formData.get('responsableId'));
     const sede = sedes.find((s) => s.idSede === sedeId);
-    const responsable = usuarios.find((u) => u.idUsuario === responsableId);
 
-    if (!sede || !responsable) {
-      setError('Sede o responsable no válidos');
+    if (!sede) {
+      setError('Sede no válida');
       return;
     }
 
@@ -108,7 +104,6 @@ const ActividadesPage: React.FC = () => {
       capacidad: capacidadStr ? Number(capacidadStr) : undefined,
       estado: formData.get('estado') as string,
       sede,
-      responsable,
     };
 
     try {
@@ -400,24 +395,6 @@ const ActividadesPage: React.FC = () => {
                   {sedes.map((sede) => (
                     <option key={sede.idSede} value={sede.idSede}>
                       {sede.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Responsable
-                </label>
-                <select
-                  name="responsableId"
-                  required
-                  defaultValue={editingActividad?.responsable?.idUsuario || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Seleccionar responsable...</option>
-                  {usuarios.map((usuario) => (
-                    <option key={usuario.idUsuario} value={usuario.idUsuario}>
-                      {usuario.nombre} ({usuario.tipoUsuario})
                     </option>
                   ))}
                 </select>

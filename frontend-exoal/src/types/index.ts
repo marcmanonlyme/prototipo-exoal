@@ -18,6 +18,7 @@ export interface Usuario {
   nombre: string;
   email: string;
   password?: string;
+  idInstitucional?: string;
   tipoUsuario: string;
   estado: string;
   fechaRegistro?: string;
@@ -37,6 +38,5 @@ export interface Actividad {
   asistentesRegistrados?: number;
   estado: string;
   sede: Sede;
-  responsable: Usuario;
   fechaCreacion?: string;
 }

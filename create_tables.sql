@@ -17,6 +17,7 @@ CREATE TABLE USUARIO (
     nombre NVARCHAR(100) NOT NULL,
     email NVARCHAR(100) NOT NULL UNIQUE,
     password NVARCHAR(255) NOT NULL,
+    id_institucional NVARCHAR(50) UNIQUE,
     tipo_usuario NVARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('estudiante', 'docente', 'administrador', 'visitante')),
     estado NVARCHAR(20) DEFAULT 'activo' CHECK (estado IN ('activo', 'inactivo', 'bloqueado')),
     fecha_registro DATETIME2 DEFAULT GETDATE(),
@@ -38,10 +39,8 @@ CREATE TABLE ACTIVIDAD (
     asistentes_registrados INT DEFAULT 0,
     estado NVARCHAR(20) DEFAULT 'programada' CHECK (estado IN ('programada', 'en_curso', 'cancelada', 'finalizada')),
     id_sede INT NOT NULL,
-    id_responsable INT,
     fecha_creacion DATETIME2 DEFAULT GETDATE(),
-    FOREIGN KEY (id_sede) REFERENCES SEDE(id_sede),
-    FOREIGN KEY (id_responsable) REFERENCES USUARIO(id_usuario)
+    FOREIGN KEY (id_sede) REFERENCES SEDE(id_sede)
 );
 
 -- Datos de prueba

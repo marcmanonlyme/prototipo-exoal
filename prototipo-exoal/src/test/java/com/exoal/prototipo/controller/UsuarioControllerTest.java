@@ -9,8 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +28,9 @@ class UsuarioControllerTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UsuarioController usuarioController;
@@ -78,28 +84,38 @@ class UsuarioControllerTest {
 
     @Test
     void createUsuario_guardaYRetornaUsuario() {
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$hashedPassword");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario1);
 
         Usuario result = usuarioController.createUsuario(usuario1);
 
         assertNotNull(result);
         assertEquals("administrador", result.getTipoUsuario());
+        verify(passwordEncoder, times(1)).encode(anyString());
         verify(usuarioRepository, times(1)).save(usuario1);
     }
 
     @Test
-    void updateUsuario_conPasswordNuevo_actualizaPassword() {
+    void createUsuario_sinPassword_lanza400() {
+        Usuario sinPassword = new Usuario("Test", "test@demo.edu", null, "estudiante", sede);
+        assertThrows(ResponseStatusException.class, () -> usuarioController.createUsuario(sinPassword));
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void updateUsuario_conPasswordNuevo_actualizaPasswordHasheada() {
         Usuario detalles = new Usuario("Admin Actualizado", "admin@univ.edu", "nuevaPassword", "administrador", sede);
+        when(passwordEncoder.encode("nuevaPassword")).thenReturn("$2a$10$hashedNueva");
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario1));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario1);
 
         ResponseEntity<Usuario> response = usuarioController.updateUsuario(1L, detalles);
 
         assertEquals(200, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        // La password debe haberse actualizado porque no está vacía
+        verify(passwordEncoder, times(1)).encode("nuevaPassword");
         verify(usuarioRepository, times(1)).save(usuario1);
-        assertEquals("nuevaPassword", usuario1.getPassword());
+        assertEquals("$2a$10$hashedNueva", usuario1.getPassword());
     }
 
     @Test
@@ -111,7 +127,7 @@ class UsuarioControllerTest {
 
         usuarioController.updateUsuario(1L, detalles);
 
-        // La password original no debe cambiar cuando se envía vacía
+        verify(passwordEncoder, never()).encode(anyString());
         assertEquals("passwordOriginal", usuario1.getPassword());
     }
 

@@ -3,8 +3,11 @@ package com.exoal.prototipo.controller;
 import com.exoal.prototipo.entity.Usuario;
 import com.exoal.prototipo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,6 +17,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping
     public List<Usuario> getAllUsuarios() {
@@ -29,6 +35,10 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario createUsuario(@RequestBody Usuario usuario) {
+        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password requerida");
+        }
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         return usuarioRepository.save(usuario);
     }
 
@@ -41,7 +51,7 @@ public class UsuarioController {
             usuario.setEstado(usuarioDetails.getEstado());
             usuario.setSede(usuarioDetails.getSede());
             if (usuarioDetails.getPassword() != null && !usuarioDetails.getPassword().isEmpty()) {
-                usuario.setPassword(usuarioDetails.getPassword());
+                usuario.setPassword(passwordEncoder.encode(usuarioDetails.getPassword()));
             }
             return ResponseEntity.ok(usuarioRepository.save(usuario));
         }).orElse(ResponseEntity.notFound().build());
