@@ -34,6 +34,12 @@ public class DataInitializer implements CommandLineRunner {
             docente.setEstado("activo");
             docente.setIdInstitucional("EMP-DOC001");
             usuarioRepository.save(docente);
+
+            Usuario estudiante = new Usuario("Estudiante Demo", "estudiante@demo.edu",
+                    passwordEncoder.encode("Estudiante123"), "estudiante", sede);
+            estudiante.setEstado("activo");
+            estudiante.setIdInstitucional("MAT-EST001");
+            usuarioRepository.save(estudiante);
         }
     }
 }
