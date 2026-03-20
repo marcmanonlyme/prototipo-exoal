@@ -55,6 +55,7 @@ public class SecurityConfig {
                     return corsConfig;
                 }))
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/sedes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/actividades", "/api/actividades/**").permitAll()
