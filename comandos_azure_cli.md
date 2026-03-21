@@ -34,7 +34,7 @@ az sql server delete --name sql-exoal-prototipo --resource-group rg-exoal-protot
 
 ### 5. Crear servidor Azure SQL
 ```bash
-az sql server create --name sql-exoal-prototipo --resource-group rg-exoal-prototipo --location westus2 --admin-user admin_exoal --admin-password P@ssw0rd123! --enable-public-network true
+az sql server create --name sql-exoal-prototipo --resource-group rg-exoal-prototipo --location westus2 --admin-user <DB_USERNAME> --admin-password <DB_PASSWORD> --enable-public-network true
 ```
 **Descripción:** Crear servidor Azure SQL en West US 2 con credenciales de administrador.
 **Resultado:** Servidor creado exitosamente con FQDN sql-exoal-prototipo.database.windows.net.
@@ -64,7 +64,7 @@ az sql db show-connection-string --server sql-exoal-prototipo --name db-exoal-pr
 
 **Notas:**
 - Todos los comandos se ejecutaron en PowerShell.
-- Las credenciales de BD son: admin_exoal / P@ssw0rd123!
+- Las credenciales de BD se configuran como variables de entorno (ver App Settings en Azure).
 - Próximos comandos se agregarán conforme avancemos (Spring Boot, App Service, etc.).
 
 ## Desarrollo del Backend - Spring Boot
@@ -82,8 +82,8 @@ az sql db show-connection-string --server sql-exoal-prototipo --name db-exoal-pr
 **Configuración de base de datos:**
 ```properties
 spring.datasource.url=jdbc:sqlserver://exoal-server.database.windows.net:1433;database=exoal-db;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
-spring.datasource.username=admin_exoal
-spring.datasource.password=P@ssw0rd123!
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
@@ -221,8 +221,8 @@ az webapp config appsettings set \
   --resource-group rg-exoal-prototipo \
   --settings \
     DB_URL="jdbc:sqlserver://sql-exoal-prototipo.database.windows.net:1433;database=db-exoal-prototipo;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" \
-    DB_USERNAME="admin_exoal" \
-    DB_PASSWORD="P@ssw0rd123!" \
+    DB_USERNAME="<DB_USERNAME>" \
+    DB_PASSWORD="<DB_PASSWORD>" \
     CORS_ALLOWED_ORIGINS="http://localhost:3000" \
     SPRING_PROFILES_ACTIVE="prod"
 ```
