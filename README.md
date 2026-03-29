@@ -24,7 +24,7 @@ Sistema de gestión académica desarrollado como prototipo para el proyecto EXOA
 - React 18 con TypeScript
 - Autenticación con contexto global y rutas protegidas
 - Páginas completas para Sedes, Actividades y Usuarios (CRUD)
-- 9 pruebas unitarias (Jest + React Testing Library)
+- 11 pruebas unitarias (Jest + React Testing Library)
 
 **Base de datos**
 - Azure SQL Database — 9 sedes, 10 actividades, 3 usuarios demo
